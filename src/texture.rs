@@ -848,7 +848,6 @@ impl Texture2D {
         // use current min_filter as texture filter mode,
         // there is no way to set mipmap filter mode directly in miniquad
         let filter_mode = ctx.texture_params(id).mag_filter;
-        println!("filter mode: {:?}", filter_mode);
         ctx.texture_set_filter(
             id,
             filter_mode,
