@@ -6,6 +6,7 @@ use crate::{
 };
 
 pub use crate::quad_gl::FilterMode;
+pub use miniquad::graphics::MipmapFilterMode;
 use crate::quad_gl::{DrawMode, Vertex};
 use glam::{vec2, Vec2};
 use slotmap::{TextureIdSlotMap, TextureSlotId};
@@ -823,11 +824,44 @@ impl Texture2D {
     pub fn set_filter(&self, filter_mode: FilterMode) {
         let ctx = get_quad_context();
 
+        let id = self.raw_miniquad_id();
+        // use mipmap filter that is currently on the texture
+        let mipmap_filter_mode = ctx.texture_params(id).mipmap_filter;
         ctx.texture_set_filter(
-            self.raw_miniquad_id(),
+            id,
             filter_mode,
-            miniquad::MipmapFilterMode::None,
+            mipmap_filter_mode,
         );
+    }
+
+    /// Sets the [MipmapFilterMode] of this texture
+    ///
+    /// Requires mipmaps to be generated for this texture first.
+    ///
+    /// # Example
+    /// ```
+    /// ```
+    pub fn set_mipmap_filter(&self, mipmap_filter_mode: MipmapFilterMode) {
+        let ctx = get_quad_context();
+
+        let id = self.raw_miniquad_id();
+        // use current min_filter as texture filter mode,
+        // there is no way to set mipmap filter mode directly in miniquad
+        let filter_mode = ctx.texture_params(id).mag_filter;
+        println!("filter mode: {:?}", filter_mode);
+        ctx.texture_set_filter(
+            id,
+            filter_mode,
+            mipmap_filter_mode,
+        );
+    }
+
+    /// Generates mipmaps for this texture
+    ///
+    /// Not supported in Metal.
+    pub fn generate_mipmaps(&self) {
+        let ctx = get_quad_context();
+        ctx.texture_generate_mipmaps(self.raw_miniquad_id())
     }
 
     /// Returns the handle for this texture.
